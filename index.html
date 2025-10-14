@@ -504,7 +504,7 @@
     <script>
         // ========== CONFIGURACIÓN ==========
         const CONFIG = {
-            scriptUrl: 'https://script.google.com/macros/s/AKfycbxuSkBUjYaVPOiQ9-bC4tU5buAh6zK6IGIk9F_mDovliyztm79QuGe1ctMbTmpjg9M4FA/exec'
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbxuejWw9aPQ8ins2WkmAjkF2G-wcO6AAXVqihYA-cBfOumGNJmyrpkNULGvy8TfJ2ayqA/exec'
         };
         // ===================================
         
@@ -774,6 +774,7 @@
             const signatureBase64 = signatureImage.split(',')[1];
             
             const pdfData = {
+				shift: currentRow.shift,
                 firstName: currentRow.firstName,
                 lastName: currentRow.lastName,
                 date: document.getElementById('modalDate').textContent,
