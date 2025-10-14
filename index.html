@@ -888,13 +888,6 @@
                     })
                 });
 
-				if (!response.ok) {
-			        throw new Error(`Error de red: ${response.statusText}`);
-			    }			    
-			    const result = await response.json();			
-			    if (result.status === 'error') {
-			        throw new Error(`Error del servidor: ${result.message || 'Error desconocido'}`);
-			    }
 				await sleep(500);
                 updateLoadingStep(3, 'completed');
                 await sleep(500);
