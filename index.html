@@ -866,10 +866,12 @@
             
             try {
                 updateLoadingStep(2, 'completed');
+				await sleep(100);
                 updateLoadingStep(3, 'active');
                 
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
+                    mode: 'no-cors',					
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -882,7 +884,8 @@
                         signatureBase64: pdfData.signatureBase64
                     })
                 });
-                
+
+				await sleep(500);
                 updateLoadingStep(3, 'completed');
                 await sleep(500);
                 
