@@ -504,7 +504,7 @@
     <script>
         // ========== CONFIGURACIÓN ==========
         const CONFIG = {
-            scriptUrl: 'https://script.google.com/macros/s/AKfycbxuejWw9aPQ8ins2WkmAjkF2G-wcO6AAXVqihYA-cBfOumGNJmyrpkNULGvy8TfJ2ayqA/exec'
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbwiJFFEHYp8Ui80XwJgvRPCNb5Jh1CtbQnAjbdDDht9paoveEXYMkuJo0XYta5f9RaeKA/exec'
         };
         // ===================================
         
@@ -617,6 +617,7 @@
                 if (result.status === 'success' && result.data && result.data.length > 0) {
                     allData = result.data.map((row, index) => ({
                         rowIndex: index + 2,
+						shift: row.shift || '',
                         date: row.date || '',
                         firstName: row.firstName || '',
                         lastName: row.lastName || '',
