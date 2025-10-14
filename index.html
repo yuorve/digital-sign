@@ -603,6 +603,7 @@
                 
                 const response = await fetch(url, {
                     method: 'GET',
+					mode: 'no-cors',
                     headers: {
                         'Accept': 'application/json',
                     }
@@ -873,6 +874,7 @@
                 
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
+					mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
