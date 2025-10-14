@@ -504,7 +504,7 @@
     <script>
         // ========== CONFIGURACIÓN ==========
         const CONFIG = {
-            scriptUrl: 'https://script.google.com/macros/s/AKfycbwKFMuDGQEbiSbytMs_yheky30DNhFBQJO6QL9ba6y91dTjUDs_wlt4qPz3p69Nbm3IPQ/exec'
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbxuSkBUjYaVPOiQ9-bC4tU5buAh6zK6IGIk9F_mDovliyztm79QuGe1ctMbTmpjg9M4FA/exec'
         };
         // ===================================
         
@@ -888,14 +888,14 @@
 				await sleep(500);
                 updateLoadingStep(3, 'completed');
                 await sleep(500);
-                
-                hideLoadingOverlay();
-                showStatus('✅ Documento firmado, descargado y guardado en Drive', 'success');
-                
-                setTimeout(() => {
-                    closeModal();
-                    loadAllData();
-                }, 1500);
+                                
+                showStatus('✅ Documento firmado y guardado en Drive', 'success');
+
+				await loadAllData();
+				hideLoadingOverlay();
+                setTimeout(() => {					
+                    closeModal();                    
+                }, 500);
                 
             } catch (error) {
                 console.error('Error saving to Drive:', error);
