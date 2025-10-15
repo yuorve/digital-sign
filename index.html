@@ -856,7 +856,7 @@
             const pdfData = {
                 firstName: currentRow.firstName,
                 lastName: currentRow.lastName,
-                date: document.getElementById('modalDate').textContent,
+                date: currentRow.date,
                 signatureBase64: signatureBase64,
                 rowIndex: currentRow.rowIndex
             };
@@ -874,6 +874,7 @@
             document.getElementById('step1').className = 'loading-step';
             document.getElementById('step2').className = 'loading-step';
             document.getElementById('step3').className = 'loading-step';
+			document.getElementById('step4').className = 'loading-step';
         }
         
         function hideLoadingOverlay() {
