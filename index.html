@@ -757,7 +757,8 @@
                             class="preview-iframe"
                             frameborder="0"
                         ></iframe>
-                    `;					
+                    `;
+					currentRow.docId = result.docId;
                 } else {
                     previewContainer.innerHTML = '<div class="preview-loading">⚠️ Error al cargar vista previa</div>';
                 }
@@ -857,6 +858,7 @@
                 firstName: currentRow.firstName,
                 lastName: currentRow.lastName,
                 date: currentRow.date,
+				previewDocId: currentRow.docId,
                 signatureBase64: signatureBase64,
                 rowIndex: currentRow.rowIndex
             };
