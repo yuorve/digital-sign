@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="author" content="Yury Leonardo Oropeza Veracierto">
     <title>Sistema de Firmas</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -171,7 +171,7 @@
             padding: 30px;
             border-radius: 15px;
             width: 90%;
-            max-width: 800px;
+            max-width: 1000px;
             max-height: 85vh;
             overflow-y: auto;
             animation: slideDown 0.3s;
@@ -397,17 +397,49 @@
             color: #2b8a3e;
         }
 
-        .filter-section {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 15px;
-            align-items: flex-end;
+        .document-preview {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #667eea;
+        }
+
+        .document-preview h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .preview-loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .preview-iframe {
+                height: 400px;
+            }
         }
 
         @media (max-width: 768px) {
             .filter-section {
                 grid-template-columns: 1fr;
             }
+        }
+        .filter-section {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            align-items: flex-end;
         }
     </style>
 </head>
@@ -475,6 +507,13 @@
                     <span id="modalDate">-</span>
                 </div>
             </div>
+
+            <div class="document-preview">
+                <h3>📄 Vista Previa del Documento</h3>
+                <div id="previewContainer">
+                    <div class="preview-loading">⏳ Cargando documento...</div>
+                </div>
+            </div>
             
             <div class="signature-section">
                 <div class="signature-title">✍️ Dibuja tu firma aquí:</div>
@@ -493,9 +532,10 @@
                 <div class="spinner"></div>
                 <div class="loading-text">Procesando documento...</div>
                 <div class="loading-steps">
-                    <div class="loading-step" id="step1">Generando PDF</div>
-                    <div class="loading-step" id="step2">Guardando en Drive</div>
-                    <div class="loading-step" id="step3">Actualizando registro</div>
+                    <div class="loading-step" id="step1">Generando Vista Previa</div>
+					<div class="loading-step" id="step2">Generando PDF</div>
+                    <div class="loading-step" id="step3">Guardando en Drive</div>
+                    <div class="loading-step" id="step4">Actualizando registro</div>
                 </div>
             </div>
         </div>
@@ -504,7 +544,7 @@
     <script>
         // ========== CONFIGURACIÓN ==========
         const CONFIG = {
-            scriptUrl: 'https://script.google.com/macros/s/AKfycbxpO7xko_7CHYn_lwyRRiY28h7Em30i0PLCw2WTP-llxhpOMdQ2kSV0noP-E6Q7jBcpLw/exec'
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbwNOVtgqHqNrzf_jaeKYVwVl0EArCvUQ9gJFWayZXNjNBWXlRBiSAfFdCgEpehoyUAgzQ/exec'
         };
         // ===================================
         
@@ -579,7 +619,7 @@
         }
         
         window.addEventListener('DOMContentLoaded', function() {
-            if (!CONFIG.scriptUrl) {
+            if (!CONFIG.scriptUrl || CONFIG.scriptUrl === 'TU_SCRIPT_URL_AQUI') {
                 showStatus('❌ Error: Configura la URL del Apps Script en el código fuente', 'error');
                 document.getElementById('noData').innerHTML = '⚠️ Error de configuración. Contacta al administrador.';
                 return;
@@ -611,12 +651,12 @@
                 if (!response.ok) {
                     throw new Error('Error al cargar datos del servidor');
                 }
-                
+                				
                 const result = await response.json();
                 
                 if (result.status === 'success' && result.data && result.data.length > 0) {
                     allData = result.data.map((row, index) => ({
-                        rowIndex: index + 2,
+                        rowIndex: index + 2,						
 						shift: row.shift || '',
                         date: row.date || '',
                         firstName: row.firstName || '',
@@ -649,7 +689,7 @@
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${row.firstName}</td>
-                    <td>${row.lastName}</td>
+                    <td>${row.lastName}</td>					
                     <td>
                         ${isSigned ? 
                             '<span class="status-signed">✅ Firmado</span>' : 
@@ -680,6 +720,9 @@
             
             document.getElementById('signatureModal').style.display = 'block';
             
+            // Cargar vista previa del documento con datos reales
+            loadDocumentPreview();
+            
             initCanvas();
             clearSignature();
             
@@ -692,9 +735,57 @@
             canvas.addEventListener('touchend', stopDrawing);
         }
         
+        async function loadDocumentPreview() {
+		
+			showLoadingOverlay();
+			updateLoadingStep(1, 'active');
+            const previewContainer = document.getElementById('previewContainer');           
+            
+            previewContainer.innerHTML = '<div class="preview-loading">⏳ Generando vista previa...</div>';
+            
+            try {
+                // Solicitar una copia temporal del documento con los datos
+				
+                const response = await fetch(CONFIG.scriptUrl, {
+                    method: 'POST',
+					mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'generatePreview',
+                        firstName: currentRow.firstName,
+                        lastName: currentRow.lastName,
+						shift: currentRow.shift,
+                        date: currentRow.date
+                    })
+                });
+
+                const result =  response.json();				
+                updateLoadingStep(1, 'completed');
+                if (result.status === 'success' && result.previewUrl) {
+                    previewContainer.innerHTML = `
+                        <iframe 
+                            src="${result.previewUrl}" 
+                            class="preview-iframe"
+                            frameborder="0"
+                        ></iframe>
+                    `;
+                } else {
+                    previewContainer.innerHTML = '<div class="preview-loading">⚠️ Error al cargar vista previa</div>';
+                }
+            } catch (error) {
+                console.error('Error loading preview:', error);
+                previewContainer.innerHTML = '<div class="preview-loading">⚠️ Error al cargar vista previa</div>';
+            }
+        }
+        
         function closeModal() {
             document.getElementById('signatureModal').style.display = 'none';
             currentRow = null;
+            
+            // Limpiar la vista previa
+            document.getElementById('previewContainer').innerHTML = '<div class="preview-loading">⏳ Cargando documento...</div>';
         }
         
         function applyDateFilter() {
@@ -775,7 +866,6 @@
             const signatureBase64 = signatureImage.split(',')[1];
             
             const pdfData = {
-				shift: currentRow.shift,
                 firstName: currentRow.firstName,
                 lastName: currentRow.lastName,
                 date: document.getElementById('modalDate').textContent,
@@ -783,12 +873,12 @@
                 rowIndex: currentRow.rowIndex
             };
             
-            updateLoadingStep(1, 'active');
+            updateLoadingStep(2, 'active');
             await sleep(500);
             //generateLocalPDF(pdfData);
-            updateLoadingStep(1, 'completed');
+            updateLoadingStep(2, 'completed');
             
-            updateLoadingStep(2, 'active');
+            updateLoadingStep(3, 'active');
             await saveToDrive(pdfData);
         }
         
@@ -867,13 +957,11 @@
             const scriptUrl = CONFIG.scriptUrl;
             
             try {
-                updateLoadingStep(2, 'completed');
-				await sleep(100);
-                updateLoadingStep(3, 'active');
+                updateLoadingStep(3, 'completed');
+                updateLoadingStep(4, 'active');
                 
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
-					mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -883,22 +971,20 @@
                         firstName: pdfData.firstName,
                         lastName: pdfData.lastName,
                         date: pdfData.date,
-						shift: pdfData.shift,
                         signatureBase64: pdfData.signatureBase64
                     })
                 });
-
-				await sleep(500);
-                updateLoadingStep(3, 'completed');
+                
+                updateLoadingStep(4, 'completed');
                 await sleep(500);
-				
-                showStatus('✅ Documento firmado y guardado en Drive', 'success');
-
-				await loadAllData();
-				hideLoadingOverlay();
-                setTimeout(() => {					
-                    closeModal();                    
-                }, 500);
+                
+                hideLoadingOverlay();
+                showStatus('✅ Documento firmado, descargado y guardado en Drive', 'success');
+                
+                setTimeout(() => {
+                    closeModal();
+                    loadAllData();
+                }, 1500);
                 
             } catch (error) {
                 console.error('Error saving to Drive:', error);
