@@ -760,7 +760,8 @@
                     })
                 });
 
-                const result =  response.json();				
+                const result = await response.json();
+				
                 updateLoadingStep(1, 'completed');				
                 if (result.status === 'success' && result.previewUrl) {
                     previewContainer.innerHTML = `
