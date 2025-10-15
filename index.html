@@ -544,7 +544,7 @@
     <script>
         // ========== CONFIGURACIÓN ==========
         const CONFIG = {
-            scriptUrl: 'https://script.google.com/macros/s/AKfycbycz_eOoEI2yxCc_13jfRNvYfd7zOnP3Wf_jykdfjum0ERPnwTKJ7DME7r9JvHKzHSKmA/exec'
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbxdi6ibxeoVBoYgIB7weMAwSdkCoLzDp549AQhBj6GFZ8HtqfVf3v9gnOOLBak8TNuYhw/exec'
         };
         // ===================================
         
@@ -746,20 +746,27 @@
             try {
                 // Solicitar una copia temporal del documento con los datos
 				
-                const response = await fetch(CONFIG.scriptUrl, {
-                    method: 'POST',
+                const params = new URLSearchParams({
+		            action: 'generatePreview',
+		            firstName: currentRow.firstName,
+		            lastName: currentRow.lastName,
+		            shift: currentRow.shift,
+		            date: currentRow.date
+		        });
+		
+		        // Construyo la URL con los parámetros
+		        const url = `${CONFIG.scriptUrl}?${params.toString()}`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'generatePreview',
-                        firstName: currentRow.firstName,
-                        lastName: currentRow.lastName,
-						shift: currentRow.shift,
-                        date: currentRow.date
-                    })
+                        'Accept': 'application/json',
+                    }
                 });
-
+                
+                if (!response.ok) {
+                    throw new Error('Error al cargar datos del servidor');
+                }
                 const result = await response.json();
 				
                 updateLoadingStep(1, 'completed');				
