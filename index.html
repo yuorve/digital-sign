@@ -544,7 +544,7 @@
     <script>
         // ========== CONFIGURACIÓN ==========
         const CONFIG = {
-            scriptUrl: 'https://script.google.com/macros/s/AKfycbwNOVtgqHqNrzf_jaeKYVwVl0EArCvUQ9gJFWayZXNjNBWXlRBiSAfFdCgEpehoyUAgzQ/exec'
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbycz_eOoEI2yxCc_13jfRNvYfd7zOnP3Wf_jykdfjum0ERPnwTKJ7DME7r9JvHKzHSKmA/exec'
         };
         // ===================================
         
@@ -748,7 +748,6 @@
 				
                 const response = await fetch(CONFIG.scriptUrl, {
                     method: 'POST',
-					mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
