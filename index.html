@@ -491,25 +491,9 @@
                 <h2>✍️ Firmar Documento</h2>
                 <span class="close" onclick="closeModal()">&times;</span>
             </div>
-            
-            <div class="document-info">
-                <h3 style="margin-bottom: 15px; color: #667eea;">📋 Información del Firmante</h3>
-                <div class="info-row">
-                    <span class="info-label">Nombre:</span>
-                    <span id="modalFirstName">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Apellido:</span>
-                    <span id="modalLastName">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Fecha:</span>
-                    <span id="modalDate">-</span>
-                </div>
-            </div>
 
             <div class="document-preview">
-                <h3>📄 Vista Previa del Documento</h3>
+                <h3>📄 Vista Previa del Documento a firmar</h3>
                 <div id="previewContainer">
                     <div class="preview-loading">⏳ Cargando documento...</div>
                 </div>
@@ -544,7 +528,7 @@
     <script>
         // ========== CONFIGURACIÓN ==========
         const CONFIG = {
-            scriptUrl: 'https://script.google.com/macros/s/AKfycbxdi6ibxeoVBoYgIB7weMAwSdkCoLzDp549AQhBj6GFZ8HtqfVf3v9gnOOLBak8TNuYhw/exec'
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbxlGCi8Gj58E18C3yPyGfPelmPpH2kp7QpHLAA1s_i7p2ZbK7r6DMelDiBT_AGdSQEDiA/exec'
         };
         // ===================================
         
@@ -714,10 +698,6 @@
         function openSignModal(index) {
             currentRow = allData[index];
             
-            document.getElementById('modalFirstName').textContent = currentRow.firstName;
-            document.getElementById('modalLastName').textContent = currentRow.lastName;
-            document.getElementById('modalDate').textContent = new Date().toLocaleDateString('es-ES');
-            
             document.getElementById('signatureModal').style.display = 'block';
             
             // Cargar vista previa del documento con datos reales
@@ -882,8 +862,7 @@
             };
             
             updateLoadingStep(2, 'active');
-            await sleep(500);
-            //generateLocalPDF(pdfData);
+            await sleep(500);            
             updateLoadingStep(2, 'completed');
             
             updateLoadingStep(3, 'active');
@@ -910,56 +889,7 @@
         
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
-        }
-        
-        function generateLocalPDF(data) {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            
-            pdf.setFontSize(20);
-            pdf.setFont(undefined, 'bold');
-            pdf.text('DOCUMENTO DE FIRMA', 105, 20, { align: 'center' });
-            
-            pdf.setLineWidth(0.5);
-            pdf.line(20, 25, 190, 25);
-            
-            pdf.setFontSize(12);
-            pdf.setFont(undefined, 'bold');
-            pdf.text('Información del Firmante:', 20, 40);
-            pdf.setFont(undefined, 'normal');
-            
-            pdf.text('Nombre:', 20, 50);
-            pdf.text(data.firstName, 60, 50);
-            
-            pdf.text('Apellido:', 20, 60);
-            pdf.text(data.lastName, 60, 60);
-            
-            pdf.text('Fecha:', 20, 70);
-            pdf.text(data.date, 60, 70);
-            
-            pdf.setFont(undefined, 'bold');
-            pdf.text('Contenido del Documento:', 20, 90);
-            pdf.setFont(undefined, 'normal');
-            
-            const content = `Por medio del presente documento, yo, ${data.firstName} ${data.lastName}, declaro haber leído y aceptado los términos y condiciones establecidos. Mi firma a continuación certifica mi conformidad y compromiso con lo expuesto.`;
-            
-            const splitContent = pdf.splitTextToSize(content, 170);
-            pdf.text(splitContent, 20, 100);
-            
-            pdf.setFont(undefined, 'bold');
-            pdf.text('Firma:', 20, 140);
-            
-            const signatureDataUrl = 'data:image/png;base64,' + data.signatureBase64;
-            pdf.addImage(signatureDataUrl, 'PNG', 20, 145, 80, 22);
-            
-            pdf.setLineWidth(0.3);
-            pdf.line(20, 170, 100, 170);
-            pdf.setFontSize(10);
-            pdf.setFont(undefined, 'normal');
-            pdf.text(`${data.firstName} ${data.lastName}`, 20, 175);
-            
-            pdf.save(`documento_firmado_${data.firstName}_${data.lastName}.pdf`);
-        }
+        }        
         
         async function saveToDrive(pdfData) {
             const scriptUrl = CONFIG.scriptUrl;
@@ -970,6 +900,7 @@
                 
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
+					mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
