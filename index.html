@@ -752,7 +752,7 @@
                 updateLoadingStep(1, 'completed');				
                 if (result.status === 'success' && result.previewUrl) {
 					currentRow.docId = result.docId;
-					console.log(result.docId);
+					console.log(currentRow.docId);
                     previewContainer.innerHTML = `
                         <iframe 
                             src="${result.previewUrl}" 
@@ -854,7 +854,7 @@
             
             const signatureImage = canvas.toDataURL('image/png');
             const signatureBase64 = signatureImage.split(',')[1];
-            
+            console.log(currentRow.docId);
             const pdfData = {
                 firstName: currentRow.firstName,
                 lastName: currentRow.lastName,
