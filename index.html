@@ -751,14 +751,15 @@
 				
                 updateLoadingStep(1, 'completed');				
                 if (result.status === 'success' && result.previewUrl) {
+					currentRow.docId = result.docId;
+					console.log(result.docId);
                     previewContainer.innerHTML = `
                         <iframe 
                             src="${result.previewUrl}" 
                             class="preview-iframe"
                             frameborder="0"
                         ></iframe>
-                    `;
-					currentRow.docId = result.docId;
+                    `;					
                 } else {
                     previewContainer.innerHTML = '<div class="preview-loading">⚠️ Error al cargar vista previa</div>';
                 }
