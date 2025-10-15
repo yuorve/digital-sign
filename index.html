@@ -762,7 +762,7 @@
                 });
 
                 const result =  response.json();				
-                updateLoadingStep(1, 'completed');
+                updateLoadingStep(1, 'completed');				
                 if (result.status === 'success' && result.previewUrl) {
                     previewContainer.innerHTML = `
                         <iframe 
@@ -770,10 +770,11 @@
                             class="preview-iframe"
                             frameborder="0"
                         ></iframe>
-                    `;
+                    `;					
                 } else {
                     previewContainer.innerHTML = '<div class="preview-loading">⚠️ Error al cargar vista previa</div>';
                 }
+				hideLoadingOverlay();
             } catch (error) {
                 console.error('Error loading preview:', error);
                 previewContainer.innerHTML = '<div class="preview-loading">⚠️ Error al cargar vista previa</div>';
