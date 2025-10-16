@@ -1,3 +1,5 @@
+![SFD Home](https://github.com/user-attachments/assets/c9ad12af-7a5d-4bf7-b1f2-29ab54935371)
+
 # Digital Signature System
 
 A simple, single-page application for digitally signing documents. It fetches data from a Google Apps Script, allows users to sign using a canvas element, and saves the signed document as a PDF to Google Drive. This system is designed for scenarios where a list of individuals need to sign a standardized document, and the process needs to be tracked and managed digitally.
@@ -11,6 +13,8 @@ A simple, single-page application for digitally signing documents. It fetches da
 -   **PDF Generation:** Dynamically generates a PDF document of the signed agreement using a Google Docs template.
 -   **Google Drive Integration:** Saves the final signed PDF to a specified folder in Google Drive.
 -   **Status Tracking:** Updates the Google Sheet with the status of the signature ("firmado") and a link to the generated PDF.
+
+<img width="1009" height="803" alt="SFD Pad" src="https://github.com/user-attachments/assets/d94d5741-5db3-4b74-b096-aecc6c7ea30c" />
 
 ## How it Works
 
