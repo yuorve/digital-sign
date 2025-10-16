@@ -488,14 +488,13 @@
     <div id="signatureModal" class="modal">
         <div class="modal-content" style="position: relative;">
             <div class="modal-header">
-                <h2>✍️ Firmar Documento</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>✍️ Firmar Documento</h2>                
             </div>
 
             <div class="document-preview">
                 <h3>📄 Vista Previa del Documento a firmar</h3>
                 <div id="previewContainer">
-                    <div class="preview-loading">⏳ Cargando documento...</div>
+                    <div class="preview-loading">⏳ Cargando documento...</div>					
                 </div>
             </div>
             
@@ -507,7 +506,7 @@
                 </div>
                 <div class="button-group">
                     <button class="btn-clear" onclick="clearSignature()">🗑️ Limpiar</button>
-                    <button class="btn-save" id="saveBtn" onclick="saveSignature()" disabled>💾 Guardar y Descargar PDF</button>
+                    <button class="btn-save" id="saveBtn" onclick="saveSignature()" disabled>💾 Firmar y Generar PDF</button>
                 </div>
             </div>
             
@@ -528,7 +527,7 @@
     <script>
         // ========== CONFIGURACIÓN ==========
         const CONFIG = {
-            scriptUrl: 'https://script.google.com/macros/s/AKfycbwiUU760laN3nZolgZuo_g0weqyYESay6vCGeFqogszIgY8scDvbk5NLsJxZ4WsuwRh/exec'
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbxRsBSjtI9GL6FwJoOI_5h12Ze8950605gpd35i14N8Py-ztl_KeBOyf1AKLawgWmI/exec'
         };
         // ===================================
         
@@ -748,13 +747,22 @@
 				
                 updateLoadingStep(1, 'completed');				
                 if (result.status === 'success' && result.previewUrl) {
-					currentRow.docId = result.docId;					
+					currentRow.docId = result.docId;
+					const docUrl = result.previewUrl.replace('/preview', '/edit');
+					
                     previewContainer.innerHTML = `
-                        <iframe 
-                            src="${result.previewUrl}" 
-                            class="preview-iframe"
-                            frameborder="0"
-                        ></iframe>
+                        <div style="text-align: center; padding: 30px;">
+							<p style="margin-bottom: 20px; font-size: 16px; color: #333;">
+								El documento se abrirá en una nueva pestaña.
+							</p>
+							<a href="${docUrl}" target="_blank" 
+							   style="background: #51cf66; color: white; padding: 10px 25px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; transition: all 0.3s; box-shadow: 0 4px 10px rgba(81,207,102,0.3);">
+								📄 Abrir Documento (Revisar)
+							</a>
+							<p style="margin-top: 20px; font-size: 12px; color: #666;">
+								**IMPORTANTE:** Cierre la pestaña después de revisar para volver a dibujar su firma aquí.
+							</p>
+						</div>
                     `;					
                 } else {
                     previewContainer.innerHTML = '<div class="preview-loading">⚠️ Error al cargar vista previa</div>';
@@ -937,13 +945,7 @@
                 }, 2000);
             }
         }
-        
-        window.onclick = function(event) {
-            const modal = document.getElementById('signatureModal');
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
+                
     </script>
 </body>
 </html>
