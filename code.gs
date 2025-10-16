@@ -7,6 +7,30 @@ const TEMPLATE_DOC_ID = 'ID-DOCUMENTO';
 
 function doGet(e) {
   try {
+    const action = e.parameter.action;
+    
+    if (action === 'getData') {
+      return getData();
+    } else if (action === 'generatePreview') {
+      return generatePreview(e.parameter.row);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      'status': 'error',
+      'message': 'Acción no válida'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    Logger.log('Error in doGet: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({
+      'status': 'error',
+      'message': error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function getData() {
+  try {
     const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
     
     // Obtener todos los datos desde la fila 2 (asumiendo que fila 1 son encabezados)
@@ -47,29 +71,70 @@ function doGet(e) {
   }
 }
 
+// Obtener datos de una fila específica
+function getRowData(rowIndex) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
+  const range = sheet.getRange(rowIndex, 1, 1, 4);
+  const values = range.getValues()[0];
+  
+  let dateStr = '';
+  if (values[0]) {
+    const date = new Date(values[0]);
+    if (!isNaN(date.getTime())) {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      dateStr = `${day}/${month}/${year}`;
+    } else {
+      dateStr = values[0].toString();
+    }
+  }
+  
+  return {
+    date: dateStr,
+    shift: values[1] || '',
+    firstName: values[2] || '',
+    lastName: values[3] || ''    
+  };
+}
+
+// Función para manejar peticiones POST
 function doPost(e) {
   try {
-    const data = JSON.parse(e.postData.contents);
-    
-    if (data.action === 'savePDF') {
-      // Generar y guardar PDF en Drive
-      return savePDFToDrive(data);
+    const requestData = JSON.parse(e.postData.contents);
+    const action = requestData.action;
+
+    if (action === 'savePDF') {
+      // Eliminar Vista Previa
+      const previewDoc = DriveApp.getFileById(requestData.previewDocId);
+      previewDoc.setTrashed(true);
+      
+      // Pasar los parámetros obtenidos del JSON del cuerpo
+      return savePDFToDrive(requestData.row, requestData.signatureBase64);
     }
-    
-  } catch (error) {
+
     return ContentService.createTextOutput(JSON.stringify({
       'status': 'error',
-      'message': error.toString()
+      'message': 'Acción no válida o no soportada por POST'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    Logger.log('Error in doPost: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({
+      'status': 'error',
+      'message': 'Error en la solicitud POST: ' + error.toString()
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-function savePDFToDrive(data) {
+function savePDFToDrive(rowIndex, signatureBase64) {
   try {
-    // 1. Crear el PDF
-    const pdfBlob = createPDFFromTemplate(data);
+    // Obtener datos de la fila
+    const rowData = getRowData(rowIndex);
     
-    // 2. Obtener o crear carpeta "Documentos Firmados"
+    const pdfBlob = createPDFFromTemplate(rowData, signatureBase64);
+    
+    // Obtener o crear carpeta "Documentos Firmados"
     const folderName = 'Documentos Firmados';
     let folder = getFolderByName(folderName);
     
@@ -77,17 +142,17 @@ function savePDFToDrive(data) {
       folder = DriveApp.createFolder(folderName);
     }
     
-    // 3. Guardar PDF en Drive
-    const fileName = `Documento_${data.date.replace(/\//g, '-')}_${data.firstName}_${data.lastName}.pdf`;
+    // Guardar PDF en Drive
+    const fileName = `Documento_${rowData.date.replace(/\//g, '-')}_${rowData.firstName}_${rowData.lastName}.pdf`;
     const file = folder.createFile(pdfBlob.setName(fileName));
     
-    // 4. Actualizar el estado en la hoja con el enlace del PDF
+    // Actualizar el estado en la hoja con el enlace del PDF
     const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);    
-    sheet.getRange('E' + data.row).setValue('firmado');    
+    sheet.getRange('E' + rowIndex).setValue('firmado');    
     
-    // Opcional: Agregar enlace del PDF en columna D
+    // Agregar enlace del PDF en columna D
     const fileUrl = file.getUrl();
-    sheet.getRange('F' + data.row).setValue(fileUrl);
+    sheet.getRange('F' + rowIndex).setValue(fileUrl);
     
     return ContentService.createTextOutput(JSON.stringify({
       'status': 'success',
@@ -97,11 +162,14 @@ function savePDFToDrive(data) {
     
   } catch (error) {
     Logger.log('Error: ' + error.toString());
-    throw error;
+    return ContentService.createTextOutput(JSON.stringify({
+      'status': 'error',
+      'message': error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-function createPDFFromTemplate(data) {
+function createPDFFromTemplate(rowData, signatureBase64) {
   // Hacer una copia de la plantilla
   const templateDoc = DriveApp.getFileById(TEMPLATE_DOC_ID);
   const tempDoc = templateDoc.makeCopy('Temp_' + new Date().getTime());
@@ -109,11 +177,10 @@ function createPDFFromTemplate(data) {
   const body = doc.getBody();
   
   // Reemplazar marcadores de posición (placeholders)
-  body.replaceText('{{NOMBRE}}', data.firstName);
-  body.replaceText('{{APELLIDO}}', data.lastName);
-  body.replaceText('{{FECHA}}', data.date);
-  body.replaceText('{{TURNO}}', data.shift);
-  body.replaceText('{{NOMBRE_COMPLETO}}', data.firstName + ' ' + data.lastName);
+  body.replaceText('{{FECHA}}', rowData.date);
+  body.replaceText('{{TURNO}}', rowData.shift);
+  body.replaceText('{{NOMBRE_COMPLETO}}', rowData.firstName + ' ' + rowData.lastName);
+  body.replaceText('{{FECHA_COMPLETA}}', formatearFecha());
   
   // Buscar el marcador {{FIRMA}} y reemplazarlo con la imagen
   const searchResult = body.findText('{{FIRMA}}');
@@ -127,7 +194,7 @@ function createPDFFromTemplate(data) {
     // Agregar la imagen de la firma
     try {
       const imageBlob = Utilities.newBlob(
-        Utilities.base64Decode(data.signatureBase64),
+        Utilities.base64Decode(signatureBase64),
         'image/png',
         'signature.png'
       );
@@ -161,3 +228,67 @@ function getFolderByName(folderName) {
   return null;
 }
 
+function formatearFecha() {
+  // Obtener la fecha de hoy (la hora y fecha actuales).
+  const hoy = new Date();
+  
+  // Extraer el mes de la fecha con métodos del objeto Date.
+  const mesNumero = hoy.getMonth();   // Devuelve el mes (0=Enero, 11=Diciembre)
+
+  // Array de meses en español (el índice 0 corresponde a Enero)
+  const mesesEnEspanol = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio", 
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+  ];
+  
+  // Obtenemos el nombre del mes. Como mesNumero va de 1 a 12, restamos 1.
+  const nombreMes = mesesEnEspanol[mesNumero - 1];
+  
+  // Construimos la cadena final
+  const fechaFormateada = `${hoy.getDate()} de ${nombreMes} de ${hoy.getFullYear()}`;  
+  
+  return fechaFormateada;
+}
+
+// Generar vista previa del documento con datos personalizados
+function generatePreview(rowIndex) {
+  try {
+    // Obtener datos de la fila
+    const rowData = getRowData(rowIndex);
+
+    // Hacer una copia de la plantilla
+    const templateDoc = DriveApp.getFileById(TEMPLATE_DOC_ID);
+    const tempDoc = templateDoc.makeCopy('Temp_' + new Date().getTime());
+
+    // Compartir el documento públicamente
+    tempDoc.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+    // Abrir y reemplazar marcadores
+    const doc = DocumentApp.openById(tempDoc.getId());
+    const body = doc.getBody();
+    
+    // Reemplazar marcadores de posición (placeholders)
+    body.replaceText('{{FECHA}}', rowData.date);
+    body.replaceText('{{TURNO}}', rowData.shift);
+    body.replaceText('{{NOMBRE_COMPLETO}}', rowData.firstName + ' ' + rowData.lastName);
+    body.replaceText('{{FECHA_COMPLETA}}', formatearFecha());
+    body.replaceText('{{FIRMA}}', '[La firma se añadirá al finalizar]');
+
+    doc.saveAndClose();
+
+    // Generar URL de vista previa
+    const previewUrl = `https://docs.google.com/document/d/${tempDoc.getId()}/preview`;
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      'status': 'success',
+      'previewUrl': previewUrl,
+      'docId': tempDoc.getId()
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    Logger.log('Error generating preview: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({
+      'status': 'error',
+      'message': error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
