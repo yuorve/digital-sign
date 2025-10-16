@@ -646,6 +646,32 @@
                         lastName: row.lastName || '',
                         status: (row.status || '').toLowerCase().trim()
                     }));
+
+					// Ordenar Alfabeticamente
+					allData.sort((a, b) => {
+						const firstNameA = a.firstName.toUpperCase();
+						const firstNameB = b.firstName.toUpperCase();
+						
+						if (firstNameA < firstNameB) {
+							return -1;
+						}
+						if (firstNameA > firstNameB) {
+							return 1;
+						}
+			
+						// Si los nombres son iguales, ordenar por apellido
+						const lastNameA = a.lastName.toUpperCase();
+						const lastNameB = b.lastName.toUpperCase();
+			
+						if (lastNameA < lastNameB) {
+							return -1;
+						}
+						if (lastNameA > lastNameB) {
+							return 1;
+						}
+						
+						return 0; // Son completamente iguales
+					});
                     
                     // Filtrar automáticamente por hoy
                     applyDateFilter();
