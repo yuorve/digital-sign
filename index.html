@@ -748,7 +748,7 @@
                 updateLoadingStep(1, 'completed');				
                 if (result.status === 'success' && result.previewUrl) {
 					currentRow.docId = result.docId;
-					const docUrl = result.previewUrl.replace('/preview', '/edit');
+					const docUrl = result.previewUrl.replace('/preview', '/view');
 					
                     previewContainer.innerHTML = `
                         <div style="text-align: center; padding: 30px;">
