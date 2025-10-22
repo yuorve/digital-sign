@@ -499,7 +499,7 @@
             </div>
             
             <div class="signature-section">
-                <div class="signature-title">✍️ Dibuja tu firma aquí:</div>
+                <div class="signature-title">✍️ Dibuja tu firma aquí (<span id="modalFirstName">-</span>):</div>
                 <div class="signature-container">
                     <canvas id="signatureCanvas" width="720" height="200"></canvas>
                     <div class="canvas-placeholder" id="placeholder">Dibuja tu firma aquí</div>
@@ -722,7 +722,8 @@
         
         function openSignModal(index) {
             currentRow = allData[index];
-            
+
+			document.getElementById('modalFirstName').textContent = currentRow.firstName;
             document.getElementById('signatureModal').style.display = 'block';
             
             // Cargar vista previa del documento con datos reales
@@ -777,16 +778,16 @@
 					const docUrl = result.previewUrl.replace('/preview', '/view');
 					
                     previewContainer.innerHTML = `
-                        <div style="text-align: center; padding: 30px;">
-							<p style="margin-bottom: 20px; font-size: 16px; color: #333;">
+                        <div style="text-align: center; padding: 10px;">
+							<p style="margin-bottom: 10px; font-size: 16px; color: #333;">
 								El documento se abrirá en una nueva pestaña.
 							</p>
 							<a href="${docUrl}" target="_blank" 
 							   style="background: #51cf66; color: white; padding: 10px 25px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; transition: all 0.3s; box-shadow: 0 4px 10px rgba(81,207,102,0.3);">
 								📄 Abrir Documento (Revisar)
 							</a>
-							<p style="margin-top: 20px; font-size: 12px; color: #666;">
-								**IMPORTANTE:** Cierre la pestaña después de revisar para volver a dibujar su firma aquí.
+							<p style="margin-top: 10px; font-size: 12px; color: #666;">
+								<b>**IMPORTANTE:**</b> Cierre la pestaña después de revisar para volver a dibujar su firma aquí.
 							</p>
 						</div>
                     `;					
