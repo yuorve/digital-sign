@@ -527,7 +527,7 @@
     <script>
         // ========== CONFIGURACIÓN ==========
         const CONFIG = {
-            scriptUrl: 'https://script.google.com/macros/s/AKfycby97ZbCeyNliv9Qf9vsNNN7gAK7Jpic6TaCiPiz6Hcd2rUY_2f65HHmpifJwmyS-pDr/exec'
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbzHrHidiYG4uHH1_jhNAYAPnUBxjeInmcXkapl0jxwwQe75MXxv_FB7pWHwkL_wkMJx/exec'
         };
         // ===================================
         
@@ -901,6 +901,8 @@
             updateLoadingStep(2, 'completed');
             
             updateLoadingStep(3, 'active');
+			currentRow.status = 'firmado';
+			applyDateFilter();
             await saveToDrive(pdfData);
         }
         
@@ -956,7 +958,7 @@
                 await sleep(500);
                 
                 hideLoadingOverlay();
-                showStatus('✅ Documento firmado, descargado y guardado en Drive', 'success');
+                showStatus('✅ Documento firmado, guardado en Drive', 'success');
                 
                 setTimeout(() => {
                     closeModal();
@@ -966,7 +968,7 @@
             } catch (error) {
                 console.error('Error saving to Drive:', error);
                 hideLoadingOverlay();
-                showStatus('⚠️ PDF descargado localmente. Error al guardar en Drive', 'error');
+                showStatus('⚠️ Error al guardar en Drive', 'error');
                 setTimeout(() => {
                     closeModal();
                 }, 2000);
