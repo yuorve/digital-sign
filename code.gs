@@ -10,6 +10,7 @@ function doGet(e) {
     const action = e.parameter.action;
     
     if (action === 'getData') {
+      cleanOldPreviews();
       return getData();
     } else if (action === 'generatePreview') {
       return generatePreview(e.parameter.row);
@@ -290,5 +291,29 @@ function generatePreview(rowIndex) {
       'status': 'error',
       'message': error.toString()
     })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// Elimina vistas previas anteriores
+function cleanOldPreviews() {
+  try {
+    const parentFile = DriveApp.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId());
+    const folder = parentFile.getParents().next()    
+    if (!folder) return;
+    
+    const files = folder.getFiles();
+    const oneHourAgo = new Date().getTime() - (60 * 60 * 1000);
+    
+    while (files.hasNext()) {
+      const file = files.next();
+      if (file.getName().startsWith('Temp_')) {
+        const createdDate = file.getDateCreated().getTime();
+        if (createdDate < oneHourAgo) {
+          file.setTrashed(true);
+        }
+      }
+    }
+  } catch (error) {
+    Logger.log('Error cleaning previews: ' + error.toString());
   }
 }
