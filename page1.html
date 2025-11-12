@@ -527,7 +527,7 @@
     <script>
         // ========== CONFIGURACIÓN ==========
         const CONFIG = {
-            scriptUrl: 'https://script.google.com/macros/s/AKfycbzHrHidiYG4uHH1_jhNAYAPnUBxjeInmcXkapl0jxwwQe75MXxv_FB7pWHwkL_wkMJx/exec'
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbzPn82Ri4PEgwQFqrpM0v2GvNY5wuEf1zKmcV-72_i_kLPZycbYpRDCKWSTWWHib0vN/exec?source=' + window.location.hostname
         };
         // ===================================
         
@@ -622,7 +622,7 @@
             showStatus('⏳ Cargando datos...', 'info');
             
             try {
-                const url = `${CONFIG.scriptUrl}?action=getData`;
+                const url = `${CONFIG.scriptUrl}&action=getData`;
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -758,7 +758,7 @@
 		        });
 		
 		        // Construyo la URL con los parámetros
-		        const url = `${CONFIG.scriptUrl}?${params.toString()}`;
+		        const url = `${CONFIG.scriptUrl}&${params.toString()}`;
                 
                 const response = await fetch(url, {
                     method: 'GET',
