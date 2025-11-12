@@ -8,11 +8,12 @@ const TEMPLATE_DOC_ID = 'ID-DOCUMENTO';
 function doGet(e) {
   try {
     const action = e.parameter.action;
+    const source = e.parameter.source;
     
-    if (action === 'getData') {
+    if (action === 'getData' && source === 'TU_DOMAIN_AQUI') {
       cleanOldPreviews();
       return getData();
-    } else if (action === 'generatePreview') {
+    } else if (action === 'generatePreview' && source === 'TU_DOMAIN_AQUI') {
       return generatePreview(e.parameter.row);
     }
     
