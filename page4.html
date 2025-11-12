@@ -622,7 +622,7 @@
             showStatus('⏳ Cargando datos...', 'info');
             
             try {
-                const url = `${CONFIG.scriptUrl}?action=getData`;
+                const url = `${CONFIG.scriptUrl}&action=getData`;
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -758,7 +758,7 @@
 		        });
 		
 		        // Construyo la URL con los parámetros
-		        const url = `${CONFIG.scriptUrl}?${params.toString()}`;
+		        const url = `${CONFIG.scriptUrl}&${params.toString()}`;
                 
                 const response = await fetch(url, {
                     method: 'GET',
